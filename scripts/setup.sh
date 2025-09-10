@@ -52,17 +52,27 @@ setup_maven() {
 }
 
 install_deps() {
-    local backend_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/player-service-backend"
-    cd "$backend_dir"
+    # Navigate to backend directory (assuming script is run from project root)
+    cd "player-service-backend"
 
     if [[ -d "target" ]]; then
-        success "Dependencies already installed"
-        return
+        success "Backend dependencies already installed"
+    else
+        log "Installing backend dependencies..."
+        mvn clean install -DskipTests
+        success "Backend dependencies installed"
     fi
 
-    log "Installing dependencies..."
-    mvn clean install -DskipTests
-    success "Dependencies installed"
+    # Install frontend dependencies
+    cd "../players-ui-react"
+
+    if [[ -d "node_modules" ]]; then
+        success "Frontend dependencies already installed"
+    else
+        log "Installing frontend dependencies..."
+        yarn install
+        success "Frontend dependencies installed"
+    fi
 }
 
 main() {

@@ -14,17 +14,19 @@ success() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
 error() { echo -e "${RED}[ERROR]${NC} $1"; }
 
 start_spring_boot() {
-    local backend_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/player-service-backend"
-    cd "$backend_dir"
+    # Save current directory and navigate to backend directory
+    local original_dir="$(pwd)"
+    cd "player-service-backend"
 
     # Check if Spring Boot is already running
     if pgrep -f "spring-boot:run" >/dev/null; then
         success "Spring Boot already running"
+        cd "$original_dir"
         return
     fi
 
     log "Starting Spring Boot application..."
-    nohup mvn spring-boot:run > ../logs/spring-boot.log 2>&1 &
+    nohup ~/.sdkman/candidates/maven/current/bin/mvn spring-boot:run > ../logs/spring-boot.log 2>&1 &
     sleep 5
 
     if pgrep -f "spring-boot:run" >/dev/null; then
@@ -33,6 +35,36 @@ start_spring_boot() {
         error "Failed to start Spring Boot"
         exit 1
     fi
+
+    # Return to original directory
+    cd "$original_dir"
+}
+
+start_frontend() {
+    # Save current directory and navigate to frontend directory
+    local original_dir="$(pwd)"
+    cd "players-ui-react"
+
+    # Check if React dev server is already running
+    if pgrep -f "react-scripts/scripts/start.js" >/dev/null; then
+        success "React frontend already running"
+        cd "$original_dir"
+        return
+    fi
+
+    log "Starting React frontend..."
+    nohup yarn start > "../logs/react-frontend.log" 2>&1 &
+    sleep 5
+
+    if pgrep -f "react-scripts/scripts/start.js" >/dev/null; then
+        success "React frontend started"
+    else
+        error "Failed to start React frontend"
+        exit 1
+    fi
+
+    # Return to original directory
+    cd "$original_dir"
 }
 
 start_ollama() {
@@ -60,14 +92,22 @@ start_ollama() {
 main() {
     log "Starting services..."
 
+    # Ensure we're in the project root directory
+    local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    local project_root="$(dirname "$script_dir")"
+    cd "$project_root"
+
+
     # Create logs directory if it doesn't exist
-    mkdir -p "$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/logs"
+    mkdir -p "logs"
 
     start_spring_boot
+    start_frontend
     start_ollama
 
-    success "Services started!"
-    log "Spring Boot: http://localhost:8080"
+    success "All services started!"
+    log "React Frontend: http://localhost:3000"
+    log "Spring Boot API: http://localhost:8080"
     log "Ollama: http://localhost:11434"
     log "Stop services: ./scripts/down.sh"
 }

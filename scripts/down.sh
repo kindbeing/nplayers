@@ -41,6 +41,34 @@ stop_spring_boot() {
     fi
 }
 
+stop_frontend() {
+    log "Stopping React frontend..."
+
+    # Find and kill React dev server processes
+    local pids=$(pgrep -f "react-scripts/scripts/start.js")
+    if [[ -z "$pids" ]]; then
+        success "React frontend not running"
+        return
+    fi
+
+    echo "$pids" | xargs kill -TERM
+    sleep 3
+
+    # Force kill if still running
+    local remaining=$(pgrep -f "react-scripts/scripts/start.js")
+    if [[ -n "$remaining" ]]; then
+        echo "$remaining" | xargs kill -KILL
+        sleep 1
+    fi
+
+    if pgrep -f "react-scripts/scripts/start.js" >/dev/null; then
+        error "Failed to stop React frontend"
+        exit 1
+    else
+        success "React frontend stopped"
+    fi
+}
+
 stop_ollama() {
     if ! command -v docker >/dev/null && ! command -v podman >/dev/null; then
         log "No container manager found, skipping Ollama"
@@ -57,14 +85,16 @@ stop_ollama() {
 
     log "Stopping Ollama..."
     $cmd stop ollama
-    $cmd rm ollama
-    success "Ollama stopped and removed"
+#    $cmd rm ollama
+    success "Ollama stopped"
+#    success "Ollama stopped and removed"
 }
 
 main() {
     log "Stopping services..."
 
     stop_spring_boot
+    stop_frontend
     stop_ollama
 
     success "All services stopped!"
