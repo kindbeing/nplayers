@@ -26,7 +26,7 @@ start_spring_boot() {
     fi
 
     log "Starting Spring Boot application..."
-    nohup ~/.sdkman/candidates/maven/current/bin/mvn spring-boot:run > ../logs/spring-boot.log 2>&1 &
+    ~/.sdkman/candidates/maven/current/bin/mvn spring-boot:run > ../logs/spring-boot.log 2>&1 &
     sleep 5
 
     if pgrep -f "spring-boot:run" >/dev/null; then
@@ -53,7 +53,7 @@ start_frontend() {
     fi
 
     log "Starting React frontend..."
-    nohup yarn start > "../logs/react-frontend.log" 2>&1 &
+    yarn start > "../logs/react-frontend.log" 2>&1 &
     sleep 5
 
     if pgrep -f "react-scripts/scripts/start.js" >/dev/null; then
@@ -76,8 +76,18 @@ start_ollama() {
     local cmd="docker"
     [[ ! -x "$(command -v docker)" ]] && cmd="podman"
 
+    # Check if Ollama is running
     if $cmd ps | grep -q ollama; then
         success "Ollama already running"
+        return
+    fi
+
+    # Check if container exists (but is stopped)
+    if $cmd ps -a | grep -q ollama; then
+        log "Starting existing Ollama container..."
+        $cmd start ollama
+        sleep 3
+        success "Ollama started"
         return
     fi
 
