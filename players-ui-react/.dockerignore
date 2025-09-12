@@ -1,0 +1,26 @@
+# Build artifacts
+build/
+node_modules/
+
+# Development files
+*.log
+*.lock
+yarn-error.log
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+
+# Git
+.git/
+.gitignore
+
+# Docker
+Dockerfile*
+.dockerignore
+
+# Tests (if not needed in container)
+src/tests/

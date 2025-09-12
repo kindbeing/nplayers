@@ -1,0 +1,39 @@
+# Development overrides for docker-compose.yml
+version: '3.8'
+
+services:
+  # React Frontend (Development mode)
+  frontend:
+    build:
+      context: ./players-ui-react
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./players-ui-react/src:/app/src
+      - ./players-ui-react/public:/app/public
+      - /app/node_modules
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - REACT_APP_API_URL=http://localhost:8080
+
+  # Spring Boot Backend (Development mode)
+  backend:
+    build:
+      context: ./player-service-backend
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./player-service-backend/src:/app/src
+      - ./player-service-backend/Player.csv:/app/Player.csv
+      - ~/.m2:/root/.m2
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - OLLAMA_HOST=http://ollama:11434
+
+  # ML Service (Development mode)
+  ml-service:
+    build:
+      context: ./player-service-backend/player-service-model
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./player-service-backend/player-service-model:/usr/local/a4a_model
+    environment:
+      - FLASK_DEBUG=1

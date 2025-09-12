@@ -1,0 +1,97 @@
+version: '3.8'
+
+services:
+  # React Frontend
+  frontend:
+    build:
+      context: ./players-ui-react
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+      - ollama
+    networks:
+      - player-service-network
+    environment:
+      - REACT_APP_API_URL=http://localhost:8080
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Spring Boot Backend
+  backend:
+    build:
+      context: ./player-service-backend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - ollama
+    networks:
+      - player-service-network
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - OLLAMA_HOST=http://ollama:11434
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/v1/players"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  # Ollama AI Service
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - player-service-network
+    command: ["serve"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  # Python ML Model Service
+  ml-service:
+    build:
+      context: ./player-service-backend/player-service-model
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    networks:
+      - player-service-network
+    environment:
+      - FLASK_ENV=production
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Ollama Model Setup Service (one-time setup)
+  ollama-setup:
+    image: ollama/ollama:latest
+    depends_on:
+      ollama:
+        condition: service_healthy
+    networks:
+      - player-service-network
+    command: ["/bin/sh", "-c", "ollama pull tinyllama && echo 'TinyLlama model downloaded'"]
+    profiles:
+      - setup
+
+networks:
+  player-service-network:
+    driver: bridge
+
+volumes:
+  ollama_data:
+    driver: local

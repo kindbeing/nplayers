@@ -1,0 +1,27 @@
+# Build artifacts
+target/
+*.jar
+
+# Development files
+*.log
+.mvn/
+mvnw
+mvnw.cmd
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+
+# Git
+.git/
+.gitignore
+
+# Docker
+Dockerfile*
+.dockerignore
+
+# Tests (if not needed in container)
+src/test/
