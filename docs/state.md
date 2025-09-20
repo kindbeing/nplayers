@@ -84,8 +84,7 @@ This is a full-stack baseball player service application with React frontend, Sp
 ### 📜 Scripts (`scripts/`) (NEW)
 
 #### Deployment & Management
-- **[run.sh](../scripts/run.sh)** - Bash script to start all services (Spring Boot, React, Ollama)
-- **[down.sh](../scripts/down.sh)** - Bash script to stop all running services
+- **[justfile](../justfile)** - Bash script to manage all services (Spring Boot, React, Ollama)
 - **[setup.sh](../scripts/setup.sh)** - Bash script for initial project setup and dependency installation
 
 ### 📝 Documentation (`docs/`) (NEW)

@@ -2,7 +2,7 @@ import dataclasses
 import random
 import time
 import uuid
-from typing import Literal, Optional
+from typing import Literal, Optional, Any
 
 import numpy as np
 import pandas as pd
@@ -167,6 +167,12 @@ def description_feedback(body: LLMFeedbackInput) -> LLMFeedbackOutput:
     data = request.json
     # Implement logic to process feedback for a description
     feedback = {"message": "Description feedback received"}
+    return jsonify(feedback), 200
+
+@app.route('/', methods=['GET'])
+def health_check() -> tuple[Any, int]:
+    # Health check endpoint
+    feedback = {"message": "Player service model healthy!"}
     return jsonify(feedback), 200
 
 
