@@ -1,6 +1,7 @@
 import logo from '../assets/logo.svg';
 import '../styling/PlayersMain.css';
 import PlayerResults from "./PlayersResults";
+import Users from "./Users";
 
 function PlayerMain() {
     return (
@@ -11,7 +12,8 @@ function PlayerMain() {
                     Hello Players
                 </p>
             </header>
-            <PlayerResults/>
+            {/*<PlayerResults/>*/}
+            <Users/>
         </div>
     );
 }
