@@ -12,8 +12,8 @@ function PlayerMain() {
                     Hello Players
                 </p>
             </header>
-            {/*<PlayerResults/>*/}
-            <Users/>
+            <PlayerResults/>
+            {/*<Users/>*/}
         </div>
     );
 }

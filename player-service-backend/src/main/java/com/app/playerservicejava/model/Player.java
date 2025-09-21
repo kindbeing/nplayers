@@ -8,7 +8,6 @@ public class Player {
 
     @Id
     @Column(name = "PLAYERID")
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private String playerId;
 
     @Column(name = "BIRTHYEAR")

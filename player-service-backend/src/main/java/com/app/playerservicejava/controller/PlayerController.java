@@ -1,7 +1,6 @@
 package com.app.playerservicejava.controller;
 
-import com.app.playerservicejava.model.Player;
-import com.app.playerservicejava.model.Players;
+import com.app.playerservicejava.model.*;
 import com.app.playerservicejava.service.PlayerService;
 import jakarta.annotation.Resource;
 import org.springframework.http.HttpStatus;
@@ -33,6 +32,20 @@ public class PlayerController {
             return new ResponseEntity<>(player.get(), HttpStatus.OK);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @GetMapping("/cursor")
+    public ResponseEntity<CursorPaginatedPlayersResponse> getPlayersCursorPaginated(
+            @RequestParam(required = false) String cursor,
+            @RequestParam(defaultValue = "10") int limit,
+            @RequestParam(defaultValue = "next") String direction) {
+
+        try {
+            CursorPaginatedPlayersResponse response = playerService.getPlayersCursorPaginated(cursor, limit, direction);
+            return ok(response);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
         }
     }
 }
