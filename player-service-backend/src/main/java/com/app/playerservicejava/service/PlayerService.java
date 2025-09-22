@@ -1,5 +1,6 @@
 package com.app.playerservicejava.service;
 
+import com.app.playerservicejava.controller.CreatePlayerRequest;
 import com.app.playerservicejava.model.Player;
 import com.app.playerservicejava.model.Players;
 import com.app.playerservicejava.repository.PlayerRepository;
@@ -30,7 +31,7 @@ public class PlayerService {
         /* simulated network delay */
         try {
             player = playerRepository.findById(playerId);
-            Thread.sleep((long)(Math.random() * 2000));
+//            Thread.sleep((long) (Math.random() * 2000));
         } catch (Exception e) {
             LOGGER.error("message=Exception in getPlayerById; exception={}", e.toString());
             return Optional.empty();
@@ -38,4 +39,24 @@ public class PlayerService {
         return player;
     }
 
+    public Player createPlayer(CreatePlayerRequest request) {
+        Player withExistingEmail;
+        try {
+            withExistingEmail = playerRepository.findByEmail(request.email());
+        } catch (Exception e) {
+            throw new PSCustomException(e.getMessage());
+        }
+
+        if (withExistingEmail != null) {
+            throw new PSDuplicateEmailException("Email address already exists");
+        }
+
+        Player toBeSaved = new Player(request.firstName(), request.lastName(), request.email());
+        try {
+            return playerRepository.save(toBeSaved);
+        } catch (Exception e) {
+            throw new PSCustomException(e.getMessage());
+        }
+    }
 }
+

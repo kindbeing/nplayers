@@ -8,7 +8,7 @@ public class Player {
 
     @Id
     @Column(name = "PLAYERID")
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.UUID)
     private String playerId;
 
     @Column(name = "BIRTHYEAR")
@@ -80,7 +80,16 @@ public class Player {
     @Column(name = "BBREFID")
     private String bbrefId;
 
+    @Column(name = "EMAIL", unique = true)
+    private String email;
+
     public Player() {}
+
+    public Player(String firstName, String lastName, String email) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+    }
 
     public String getPlayerId() {
         return playerId;
@@ -272,5 +281,13 @@ public class Player {
 
     public void setBbrefId(String bbrefId) {
         this.bbrefId = bbrefId;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 }

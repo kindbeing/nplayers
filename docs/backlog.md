@@ -22,13 +22,14 @@ So that I can keep my team information current
 ```
 **Acceptance Criteria:**
 - GIVEN I am on the players list page
-- WHEN I click the "Add Player" button and fill out the form with name, position, and team
+- WHEN I click the "Add Player" button and fill out the form with firstName, lastName, email, and optional player details
 - THEN the new player is created and appears in the players list
 - AND I see a success message confirming the player was added
-- AND duplicate players (same name + team) are prevented with an error message
+- AND duplicate email addresses are prevented with a clear error message
+- AND the system generates a unique playerId for the new player
 
 **Resources:**
-Developer note: Implement POST /api/players endpoint with validation
+Developer note: Implement POST /api/players endpoint with validation. Required fields: firstName, lastName, email. Email must be unique. Optional fields: birthYear, birthMonth, birthDay, weight, height, bats, throws, debut, etc.
 
 **US-002: A team manager can view detailed player information**
 ```
@@ -61,19 +62,6 @@ So that I can keep player records accurate
 **Resources:**
 Developer note: Implement PUT /api/players/{id} endpoint with validation
 
-**US-004: A team manager can remove players from the system**
-```
-As Sarah the team manager
-I want to delete players from the system
-So that I can manage inactive or transferred players
-```
-**Acceptance Criteria:**
-- GIVEN I am on a player detail page
-- WHEN I click the "Delete Player" button and confirm the deletion
-- THEN the player is removed from the system
-- AND I am redirected to the players list page
-- AND the deleted player no longer appears in the list
-
 **Resources:**
 Developer note: Implement DELETE /api/players/{id} endpoint with confirmation dialog
 
@@ -86,20 +74,20 @@ I want to search for players by name
 So that I can quickly find specific players in large lists
 ```
 **Acceptance Criteria:**
-- GET /api/players?search={term} endpoint for name filtering
+- GET /api/players?search={term} endpoint for firstName/lastName filtering
 - Search input with debouncing (300ms)
 - Case-insensitive partial matching
 - Clear search functionality
 
-**US-006: Filter Players by Team**
+**US-006: Filter Players by Birth Year**
 ```
 As Alex the league administrator
-I want to filter players by team
-So that I can view rosters for specific teams
+I want to filter players by birth year
+So that I can analyze players by generation
 ```
 **Acceptance Criteria:**
-- GET /api/players?team={team} endpoint
-- Team filter dropdown with available teams
+- GET /api/players?birthYear={year} endpoint
+- Birth year filter dropdown with available years
 - Combine with search functionality
 - Clear filters option
 

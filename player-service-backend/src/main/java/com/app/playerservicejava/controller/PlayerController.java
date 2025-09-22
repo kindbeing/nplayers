@@ -4,6 +4,7 @@ import com.app.playerservicejava.model.Player;
 import com.app.playerservicejava.model.Players;
 import com.app.playerservicejava.service.PlayerService;
 import jakarta.annotation.Resource;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,12 @@ import static org.springframework.http.ResponseEntity.ok;
 public class PlayerController {
     @Resource
     private PlayerService playerService;
+
+    @PostMapping
+    public ResponseEntity<Player> createPlayer(@Valid @RequestBody CreatePlayerRequest request) {
+        Player player = playerService.createPlayer(request);
+        return ok(player);
+    }
 
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<Players> getPlayers() {
