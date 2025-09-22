@@ -3,7 +3,7 @@ export const validateId = (value) => {
 }
 
 export const validateCountryCode = (value) => {
-    return true;
+    return Boolean(value && value.trim().length > 0);
 }
 
 export const sanitizeInput =  (value) => {

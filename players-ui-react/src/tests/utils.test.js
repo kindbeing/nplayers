@@ -6,6 +6,8 @@ test('basic utility functions tests', () => {
     expect(validateId('   ')).toBe(false);
     expect(validateId(null)).toBe(false);
     expect(validateCountryCode('USA')).toBe(true);
-    // need some more tests here
+    expect(validateCountryCode('')).toBe(false);
+    expect(validateCountryCode('   ')).toBe(false);
+    expect(validateCountryCode(null)).toBe(false);
 });
 

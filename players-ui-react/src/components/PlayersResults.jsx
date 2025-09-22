@@ -6,8 +6,10 @@ import {fetchData, fetchPlayerDetails} from "../utils/DataFetcher";
 function PlayerResults() {
 
     const [players, setPlayers] = useState([]);
+    const [filteredPlayers, setFilteredPlayers] = useState([]);
     const [player, setPlayer] = useState(null);
     const [playerIdInput, setPlayerIdInput] = useState('');
+    const [countryInput, setCountryInput] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
@@ -15,8 +17,9 @@ function PlayerResults() {
         fetchData()
             .then(data => {
                 const subsetOfPlayers = data.players.slice(0,10);
-                setPlayers(subsetOfPlayers)
-                console.log(subsetOfPlayers)
+                setPlayers(subsetOfPlayers);
+                setFilteredPlayers(subsetOfPlayers);
+                console.log(subsetOfPlayers);
             })
     }, []);
 
@@ -41,11 +44,18 @@ function PlayerResults() {
         }
     }
 
-    const handleSearchByCountry = (input) => {
-
-        if (validateCountryCode(input)) {
-            // do something
+    const handleSearchByCountry = () => {
+        if (!validateCountryCode(countryInput)) {
+            setError('Country code is required');
+            return;
         }
+
+        setError(null);
+        const filtered = players.filter(player =>
+            player.birthCountry &&
+            player.birthCountry.toLowerCase().includes(countryInput.trim().toLowerCase())
+        );
+        setFilteredPlayers(filtered);
     }
 
  return (
@@ -53,8 +63,8 @@ function PlayerResults() {
          <div className="player-results-header">
             <div className="player-results-search">
                 <label id="player-id-input">Player id:</label>
-                <input 
-                    aria-labelledby="player-id-input" 
+                <input
+                    aria-labelledby="player-id-input"
                     type="text"
                     value={playerIdInput}
                     onChange={(e) => setPlayerIdInput(e.target.value)}
@@ -62,9 +72,14 @@ function PlayerResults() {
                 <button onClick={handleSearchById}>Submit</button>
             </div>
              <div className="player-results-search">
-                 <label >Player Country Code:</label>
-                 <input type=""/>
-                 <button onClick={()=>{}}>Search</button>
+                 <label >Country Code:</label>
+                 <input
+                     type="text"
+                     value={countryInput}
+                     onChange={(e) => setCountryInput(e.target.value)}
+                     placeholder="e.g., USA, CAN"
+                 />
+                 <button onClick={handleSearchByCountry}>Filter</button>
              </div>
          </div>
           {loading && (
@@ -95,11 +110,12 @@ function PlayerResults() {
               </div>
           )}
          <div className="players-results-section">
-             {/* Body of results should go here */}
-            {players.map((playerItem, index) => {
+             <h3>Players ({filteredPlayers.length})</h3>
+            {filteredPlayers.map((playerItem, index) => {
                 return(
-                    <div key={playerItem.playerId || index} style={{"display": "flex", "gap": "1vh"}}>
-                       <div>{playerItem.playerId}</div>
+                    <div key={playerItem.playerId || index} style={{"display": "flex", "gap": "1vh", "padding": "5px", "borderBottom": "1px solid #eee"}}>
+                       <div><strong>{playerItem.playerId}</strong></div>
+                       <div>{playerItem.firstName} {playerItem.lastName}</div>
                        <div>{playerItem.birthCountry}</div>
                     </div>
                 )
