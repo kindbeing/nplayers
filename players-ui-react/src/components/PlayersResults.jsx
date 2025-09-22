@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
 import {validateId, validateCountryCode, sanitizeInput} from "../utils";
-import {fetchData, fetchPlayerDetails} from "../utils/DataFetcher";
+import {fetchData, fetchPlayerDetails, fetchPlayerAnalysis} from "../utils/DataFetcher";
 
 function PlayerResults() {
 
@@ -10,6 +10,9 @@ function PlayerResults() {
     const [player, setPlayer] = useState(null);
     const [playerIdInput, setPlayerIdInput] = useState('');
     const [countryInput, setCountryInput] = useState('');
+    const [aiAnalysis, setAiAnalysis] = useState(null);
+    const [aiLoading, setAiLoading] = useState(false);
+    const [aiError, setAiError] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
@@ -56,6 +59,23 @@ function PlayerResults() {
             player.birthCountry.toLowerCase().includes(countryInput.trim().toLowerCase())
         );
         setFilteredPlayers(filtered);
+    }
+
+    const handleGetAIAnalysis = async () => {
+        if (!player) return;
+
+        setAiLoading(true);
+        setAiError(null);
+        setAiAnalysis(null);
+
+        try {
+            const analysis = await fetchPlayerAnalysis(player.playerId, player);
+            setAiAnalysis(analysis);
+        } catch (error) {
+            setAiError(error.message);
+        } finally {
+            setAiLoading(false);
+        }
     }
 
  return (
@@ -107,6 +127,52 @@ function PlayerResults() {
                   <div>Height: {player.height}</div>
                   <div>Bats: {player.bats}</div>
                   <div>Throws: {player.throwStats}</div>
+
+                  <div className="ai-analysis-section" style={{marginTop: '20px'}}>
+                      <h4>AI Performance Analysis</h4>
+                      <button
+                          onClick={handleGetAIAnalysis}
+                          disabled={aiLoading}
+                          style={{
+                              padding: '8px 16px',
+                              backgroundColor: aiLoading ? '#ccc' : '#007bff',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '4px',
+                              cursor: aiLoading ? 'not-allowed' : 'pointer'
+                          }}
+                      >
+                          {aiLoading ? 'Analyzing...' : 'Get AI Analysis'}
+                      </button>
+
+                      {aiLoading && (
+                          <div style={{marginTop: '10px', color: '#666'}}>
+                              Analyzing player performance with AI...
+                          </div>
+                      )}
+
+                      {aiError && (
+                          <div style={{marginTop: '10px', color: '#d32f2f', fontSize: '14px'}}>
+                              {aiError}
+                          </div>
+                      )}
+
+                      {aiAnalysis && (
+                          <div style={{
+                              marginTop: '15px',
+                              padding: '15px',
+                              backgroundColor: '#f8f9fa',
+                              border: '1px solid #e9ecef',
+                              borderRadius: '4px',
+                              whiteSpace: 'pre-wrap',
+                              fontSize: '14px',
+                              lineHeight: '1.5'
+                          }}>
+                              <strong>AI Analysis:</strong><br />
+                              {aiAnalysis}
+                          </div>
+                      )}
+                  </div>
               </div>
           )}
          <div className="players-results-section">

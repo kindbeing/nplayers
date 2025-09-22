@@ -1,13 +1,16 @@
 import dataclasses
+import os
 import random
 import time
 import uuid
 from typing import Literal, Optional, Any
 
 import numpy as np
+import ollama
 import pandas as pd
 from flask import Flask, request, jsonify
 from flask_pydantic import validate
+from flask_cors import CORS
 import joblib
 from pydantic import BaseModel
 
@@ -35,6 +38,11 @@ exclude_db = {}
 
 app = Flask(__name__)
 
+# Enable CORS for all routes
+CORS(app)
+
+# Ollama configuration
+OLLAMA_HOST = os.getenv('OLLAMA_HOST', 'http://localhost:11434')
 
 class TeamException(Exception):
     pass
@@ -154,12 +162,37 @@ class LLMFeedbackOutput(BaseModel):
     user_prompt: str
 
 @app.route('/llm/generate', methods=['POST'])
-@validate
-def generate_description(body: LLMInput) -> LLMOutput:
-    data = request.json
-    # Implement logic to generate a description based on the provided data
-    description = {"description": "Generated Description"}
-    return jsonify(description), 201
+def generate_description():
+    try:
+        # Get JSON data from request
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "No JSON data provided"}), 400
+
+        user_prompt = data.get('user_prompt')
+        system_prompt = data.get('system_prompt')
+
+        if not user_prompt:
+            return jsonify({"error": "user_prompt is required"}), 400
+
+        # Call Ollama to generate analysis
+        response = ollama.generate(
+            model='tinyllama',  # Use tinyllama model as per README
+            prompt=user_prompt,
+            system=system_prompt,
+            options={
+                'temperature': 0.7,  # Balanced creativity vs consistency
+                'top_p': 0.9,
+                'num_predict': 500  # Reasonable response length
+            }
+        )
+
+        return jsonify({"response": response['response']})
+
+    except Exception as e:
+        # Handle Ollama connection errors gracefully
+        error_msg = f"AI analysis unavailable: {str(e)}"
+        return jsonify({"response": error_msg})
 
 
 @app.route('/llm/feedback', methods=['POST'])
