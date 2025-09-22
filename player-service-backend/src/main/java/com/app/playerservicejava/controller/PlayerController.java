@@ -33,9 +33,14 @@ public class PlayerController {
         return ok(player);
     }
 
-    @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<Players> getPlayers() {
-        Players players = playerService.getPlayers();
+    @GetMapping
+    public ResponseEntity<Players> getPlayers(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String birthYear,
+            @RequestParam(required = false) String country,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Players players = playerService.getPlayers(search, birthYear, country, page, size);
         return ok(players);
     }
 

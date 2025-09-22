@@ -16,15 +16,31 @@ function PlayerResults() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
+    // New state for search and filters
+    const [searchTerm, setSearchTerm] = useState('');
+    const [birthYearFilter, setBirthYearFilter] = useState('');
+    const [countryFilter, setCountryFilter] = useState('');
+    const [currentPage, setCurrentPage] = useState(0);
+    const [pageSize, setPageSize] = useState(10);
+    const [totalPlayers, setTotalPlayers] = useState(0);
+
     useEffect(() => {
-        fetchData()
-            .then(data => {
-                const subsetOfPlayers = data.players.slice(0,10);
-                setPlayers(subsetOfPlayers);
-                setFilteredPlayers(subsetOfPlayers);
-                console.log(subsetOfPlayers);
-            })
-    }, []);
+        fetchPlayers();
+    }, [searchTerm, birthYearFilter, countryFilter, currentPage, pageSize]);
+
+    const fetchPlayers = async () => {
+        try {
+            setLoading(true);
+            const data = await fetchData(searchTerm, birthYearFilter, countryFilter, currentPage, pageSize);
+            setPlayers(data.players);
+            setFilteredPlayers(data.players);
+            setTotalPlayers(data.players.length * (currentPage + 1)); // Approximate total for now
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleSearchById = async () => {
         if (!validateId(playerIdInput)) {
@@ -59,6 +75,29 @@ function PlayerResults() {
             player.birthCountry.toLowerCase().includes(countryInput.trim().toLowerCase())
         );
         setFilteredPlayers(filtered);
+    }
+
+    const handleSearchSubmit = () => {
+        setCurrentPage(0); // Reset to first page when searching
+        fetchPlayers();
+    }
+
+    const handlePageChange = (newPage) => {
+        setCurrentPage(newPage);
+    }
+
+    const handlePageSizeChange = (newSize) => {
+        setPageSize(newSize);
+        setCurrentPage(0); // Reset to first page
+    }
+
+    const clearFilters = () => {
+        setSearchTerm('');
+        setBirthYearFilter('');
+        setCountryFilter('');
+        setCurrentPage(0);
+        setPageSize(10);
+        fetchPlayers();
     }
 
     const handleGetAIAnalysis = async () => {
@@ -100,6 +139,74 @@ function PlayerResults() {
                      placeholder="e.g., USA, CAN"
                  />
                  <button onClick={handleSearchByCountry}>Filter</button>
+             </div>
+         </div>
+
+         {/* Search and Filter Section */}
+         <div className="player-results-header" style={{marginTop: '20px', padding: '15px', backgroundColor: '#f8f9fa', borderRadius: '4px'}}>
+             <h3>Search & Filter Players</h3>
+             <div style={{display: 'flex', gap: '15px', flexWrap: 'wrap', alignItems: 'end'}}>
+                 <div className="player-results-search">
+                     <label>Search Name:</label>
+                     <input
+                         type="text"
+                         value={searchTerm}
+                         onChange={(e) => setSearchTerm(e.target.value)}
+                         placeholder="First or last name"
+                     />
+                 </div>
+                 <div className="player-results-search">
+                     <label>Birth Year:</label>
+                     <input
+                         type="text"
+                         value={birthYearFilter}
+                         onChange={(e) => setBirthYearFilter(e.target.value)}
+                         placeholder="e.g., 1981"
+                     />
+                 </div>
+                 <div className="player-results-search">
+                     <label>Country:</label>
+                     <input
+                         type="text"
+                         value={countryFilter}
+                         onChange={(e) => setCountryFilter(e.target.value)}
+                         placeholder="e.g., USA"
+                     />
+                 </div>
+                 <button onClick={handleSearchSubmit} style={{padding: '8px 16px'}}>Search</button>
+                 <button onClick={clearFilters} style={{padding: '8px 16px', backgroundColor: '#6c757d'}}>Clear</button>
+             </div>
+         </div>
+
+         {/* Pagination Controls */}
+         <div className="player-results-header" style={{marginTop: '10px'}}>
+             <div style={{display: 'flex', gap: '15px', alignItems: 'center', flexWrap: 'wrap'}}>
+                 <div className="player-results-search">
+                     <label>Page Size:</label>
+                     <select value={pageSize} onChange={(e) => handlePageSizeChange(Number(e.target.value))}>
+                         <option value={5}>5</option>
+                         <option value={10}>10</option>
+                         <option value={25}>25</option>
+                         <option value={50}>50</option>
+                     </select>
+                 </div>
+                 <div style={{display: 'flex', gap: '10px', alignItems: 'center'}}>
+                     <button
+                         onClick={() => handlePageChange(currentPage - 1)}
+                         disabled={currentPage === 0}
+                         style={{padding: '6px 12px'}}
+                     >
+                         Previous
+                     </button>
+                     <span>Page {currentPage + 1}</span>
+                     <button
+                         onClick={() => handlePageChange(currentPage + 1)}
+                         disabled={filteredPlayers.length < pageSize}
+                         style={{padding: '6px 12px'}}
+                     >
+                         Next
+                     </button>
+                 </div>
              </div>
          </div>
           {loading && (
@@ -176,16 +283,41 @@ function PlayerResults() {
               </div>
           )}
          <div className="players-results-section">
-             <h3>Players ({filteredPlayers.length})</h3>
+             <h3>Players ({filteredPlayers.length}) - Page {currentPage + 1}</h3>
+             {(searchTerm || birthYearFilter || countryFilter) && (
+                 <div style={{marginBottom: '10px', padding: '8px', backgroundColor: '#e3f2fd', borderRadius: '4px'}}>
+                     <strong>Active Filters:</strong>
+                     {searchTerm && <span> Name: "{searchTerm}"</span>}
+                     {birthYearFilter && <span> Birth Year: {birthYearFilter}</span>}
+                     {countryFilter && <span> Country: {countryFilter}</span>}
+                 </div>
+             )}
             {filteredPlayers.map((playerItem, index) => {
                 return(
-                    <div key={playerItem.playerId || index} style={{"display": "flex", "gap": "1vh", "padding": "5px", "borderBottom": "1px solid #eee"}}>
-                       <div><strong>{playerItem.playerId}</strong></div>
-                       <div>{playerItem.firstName} {playerItem.lastName}</div>
-                       <div>{playerItem.birthCountry}</div>
+                    <div key={playerItem.playerId || index} style={{"display": "flex", "gap": "1vh", "padding": "8px", "borderBottom": "1px solid #eee", "alignItems": "center"}}>
+                       <div style={{minWidth: '120px'}}><strong>{playerItem.playerId}</strong></div>
+                       <div style={{minWidth: '150px'}}>{playerItem.firstName} {playerItem.lastName}</div>
+                       <div style={{minWidth: '80px'}}>{playerItem.birthYear}</div>
+                       <div style={{minWidth: '100px'}}>{playerItem.birthCountry}</div>
+                       <div style={{marginLeft: 'auto'}}>
+                           <button
+                               onClick={() => {
+                                   setPlayerIdInput(playerItem.playerId);
+                                   handleSearchById();
+                               }}
+                               style={{padding: '4px 8px', fontSize: '12px'}}
+                           >
+                               View Details
+                           </button>
+                       </div>
                     </div>
                 )
             })}
+            {filteredPlayers.length === 0 && !loading && (
+                <div style={{padding: '20px', textAlign: 'center', color: '#666'}}>
+                    No players found matching your criteria.
+                </div>
+            )}
          </div>
 
 

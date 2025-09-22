@@ -1,5 +1,16 @@
-export async function fetchData() {
-    return fetch('/v1/players')
+export async function fetchData(search = '', birthYear = '', country = '', page = 0, size = 10) {
+    const params = new URLSearchParams();
+
+    if (search) params.append('search', search);
+    if (birthYear) params.append('birthYear', birthYear);
+    if (country) params.append('country', country);
+    if (page > 0) params.append('page', page.toString());
+    if (size !== 10) params.append('size', size.toString());
+
+    const queryString = params.toString();
+    const url = queryString ? `/v1/players?${queryString}` : '/v1/players';
+
+    return fetch(url)
         .then(response => response.json())
         .then(data => {
             return data;
