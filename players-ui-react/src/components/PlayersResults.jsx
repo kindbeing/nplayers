@@ -69,7 +69,7 @@ function PlayerResults() {
         setAiAnalysis(null);
 
         try {
-            const analysis = await fetchPlayerAnalysis(player.playerId, player);
+            const analysis = await fetchPlayerAnalysis(player.playerId);
             setAiAnalysis(analysis);
         } catch (error) {
             setAiError(error.message);

@@ -62,4 +62,21 @@ public class ChatClientService {
         return response.getResponse();
     }
 
+    public String analyzePlayer(String playerData) throws OllamaBaseException, IOException, InterruptedException {
+        String model = OllamaModelType.TINYLLAMA;
+
+        PromptBuilder promptBuilder =
+                new PromptBuilder()
+                        .addLine("You are a baseball analyst providing performance insights.")
+                        .addLine("Analyze the player's career, playing style, and impact.")
+                        .addLine("Keep your response to 3-4 key insights, concise and professional.")
+                        .addSeparator()
+                        .addLine("Player data: " + playerData)
+                        .addLine("Provide 3-4 key insights about their career performance and playing style.");
+
+        boolean raw = false;
+        OllamaResult response = ollamaAPI.generate(model, promptBuilder.build(), raw, new OptionsBuilder().build());
+        return response.getResponse();
+    }
+
 }
